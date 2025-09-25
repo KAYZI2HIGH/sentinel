@@ -35,7 +35,7 @@ export const SearchInterface: React.FC<SearchInterfaceProps> = ({
 
   return (
     <div className="relative bg-neutral-900/50 rounded-xl border border-neutral-800 max-w-[700px] mx-auto">
-      <div className="overflow-y-auto">
+      <div className="overflow-y-hidden h-10">
         <Textarea
           ref={textareaRef}
           value={value}
@@ -46,16 +46,16 @@ export const SearchInterface: React.FC<SearchInterfaceProps> = ({
           onKeyDown={handleKeyDown}
           placeholder={useTypewriterPlaceholder()}
           className={cn(
-            "w-full px-4 py-3 resize-none bg-transparent border-none text-white text-lg",
+            "w-full px-4 py-0 pt-3 resize-none bg-transparent border-none text-white text-lg",
             "focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
             "placeholder:text-neutral-500 placeholder:text-lg placeholder:font-[var(--font-geist-mono)]",
-            "min-h-[20px]"
+            ""
           )}
           style={{ overflow: "hidden" }}
         />
       </div>
 
-      <div className="flex items-center justify-between p-3">
+      <div className="flex items-center justify-between pt-0 p-3">
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
