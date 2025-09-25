@@ -49,7 +49,7 @@ export const SearchInterface: React.FC<SearchInterfaceProps> = ({
             "w-full px-4 py-3 resize-none bg-transparent border-none text-white text-lg",
             "focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
             "placeholder:text-neutral-500 placeholder:text-lg placeholder:font-[var(--font-geist-mono)]",
-            "min-h-[80px]"
+            "min-h-[20px]"
           )}
           style={{ overflow: "hidden" }}
         />

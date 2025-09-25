@@ -27,7 +27,7 @@ const Hero1 = () => {
           setValue("");
           adjustHeight(true);
         }, 8000);
-router.push('/analyze/12345')
+		router.push('/analyze/12345')
       });
     }
   };

@@ -61,7 +61,7 @@ export const HeroContent: React.FC<HeroContentProps> = ({
             <Button
               key={index}
               variant="secondary"
-              className="bg-[#1c1528] hover:bg-[#2a1f3d] rounded-full px-4 py-2 text-sm text-white"
+              className="bg-[#1c1528] cursor-none hover:bg-[#2a1f3d] rounded-full px-4 py-2 text-sm text-white"
             >
               {pill}
             </Button>
