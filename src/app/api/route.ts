@@ -1,8 +1,14 @@
 import type { NextRequest } from 'next/server'
 
+//Use of Upstash Redis for Caching conversation histories
  
 export async function POST(request: NextRequest, { params }) {
-	
+	try{
+		
+	}catch(error){
+		console.log(error)
+		re
+	}
 }
 
 /*
@@ -13,6 +19,5 @@ export const config = {
     },
   },
   // Specifies the maximum allowed duration for this function to execute (in seconds)
-  maxDuration: 5,
-}
-*/
+  maxDuration: 7,
+  */
