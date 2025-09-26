@@ -6,7 +6,6 @@ export async function POST(request: NextRequest, { params }) {
 	try{
 		const body = await request.json();
 		const { sessionId, message } = body;
-		console.log(sessionId)
 		
 		const reply = await generateAIResponse(sessionId, message)
 		

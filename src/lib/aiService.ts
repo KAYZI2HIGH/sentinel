@@ -31,16 +31,16 @@ export async function generateAIResponse(sessionId: string, message: string) {
 	//get cached chat history
 	let redis = await getRedisClient()
 	
-	let chatHistory: ChatHistory[] || []
+	let chatHistory: ChatHistory[] = []
 	
 	if(redis.isReady){
 		let res = await redis.get(sessionId)
-		console.log(res)
 		if(res){
 			chatHistory = JSON.parse(res)
+			console.log(chatHistory)
 			console.log("cache hit")
 		} else{
-			chatHistory = []
+			console.log("cache miss")
 		}
 		
 	}
@@ -65,9 +65,10 @@ export async function generateAIResponse(sessionId: string, message: string) {
 	const updatedHistory = [
 		...chatHistory,
 		{ role: "user", content: message },
-		{ role: "assistant", content: reply },
+		{ role: "model", content: reply },
 	];
-	await redis.setEx(sessionId, 15, JSON.stringify(updatedHistory));
+	console.log(updatedHistory)
+	await redis.setEx(sessionId, 60 * 30, JSON.stringify(updatedHistory));
 
 	return reply
 }
