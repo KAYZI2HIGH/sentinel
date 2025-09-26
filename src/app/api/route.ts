@@ -1,13 +1,16 @@
-import type { NextRequest } from 'next/server'
-
-//Use of Upstash Redis for Caching conversation histories
+import type { NextRequest, NextResponse } from 'next/server'
+import { generateAIResponse } from "@/lib/aiService"
  
 export async function POST(request: NextRequest, { params }) {
 	try{
+		const { sessionId, message } = request.body
 		
+		const reply = await generateAIResponse(sessionId, message)
+		
+		return NextResponse.json({ reply }, { status: 200 })
 	}catch(error){
 		console.log(error)
-		re
+		return NextResponse.json({ "error":error }, { status: 500 })
 	}
 }
 
