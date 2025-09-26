@@ -61,5 +61,5 @@ export async function generateAIResponse(sessionId: string, message: string) {
 	];
 	await redis.setEx(sessionId, 15, JSON.stringify(updatedHistory));
 
-	return response.text()
+	return reply
 }
