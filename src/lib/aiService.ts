@@ -11,13 +11,13 @@ if(!GEMINI_API_KEY){
 
 const genAI = new GoogleGenAI({apiKey: GEMINI_API_KEY});
 
-const GEMINI_MODEL = "gemini-1.5-flash";
+const GEMINI_MODEL = "gemini-2.0-flash";
 
 const generationConfig = {
     temperature: 1,
     topP: 0.95,
     topK: 64,
-    maxOutputTokens: 8192,
+    maxOutputTokens: 2048,
     responseMimeType: "text/plain",
 };
 
@@ -27,6 +27,8 @@ type ChatHistory = {
 }
 
 export async function generateAIResponse(sessionId: string, message: string) {
+	
+	//get cached chat history
 	let redis = await getRedisClient()
 	
 	let chatHistory: ChatHistory[] | []
@@ -49,10 +51,14 @@ export async function generateAIResponse(sessionId: string, message: string) {
 		}
 	))
 	
-	const chat = model.startChat({ history: formattedHistory });
+	//initialize chat and get response
+	const chat = genAI.chats.create({
+		model: GEMINI_MODEL,
+		history: formattedHistory,
+	})
 
-	const response = await retryRequest<>(()=>chat.sendMessage(message))
-	const reply = response.response.text()
+	const response = await retryRequest<>(()=>chat.sendMessage({ message: message }))
+	const reply = response.text
 
 	const updatedHistory = [
 		...chatHistory,
