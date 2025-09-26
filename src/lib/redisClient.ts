@@ -14,13 +14,19 @@ import { createClient } from "redis";
 let redisClient: ReturnType<typeof createClient> | null
 
 export const getRedisClient = async () => {
+	console.log(process.env.REDIS_URL)
 	if(!redisClient){
 		if(!process.env.REDIS_URL){
 			throw new Error("Must define Redis Url")
 		}
 		redisClient = createClient({
-			url: process.env.REDIS_URL
-		})
+			username: 'default',
+			password: 'Zv8TkvrzXEjG1rVJRRLmRDEiqk0WW3e4',
+			socket: {
+				host: 'redis-15002.c124.us-central1-1.gce.redns.redis-cloud.com',
+				port: 15002
+			}
+		});
 		redisClient.on('error', err => console.log('Redis Client Error', err));
 		await redisClient.connect();
 	}

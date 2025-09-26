@@ -31,17 +31,18 @@ export async function generateAIResponse(sessionId: string, message: string) {
 	//get cached chat history
 	let redis = await getRedisClient()
 	
-	let chatHistory: ChatHistory[] | []
+	let chatHistory: ChatHistory[] || []
 	
 	if(redis.isReady){
-		chatHistory = JSON.parse(redis.get(sessionId))
-	}
-	
-	if(!chatHistory){
-		chatHistory = []
-		console.log("Cache miss")
-	} else{
-		console.log("Cache Hit")
+		let res = await redis.get(sessionId)
+		console.log(res)
+		if(res){
+			chatHistory = JSON.parse(res)
+			console.log("cache hit")
+		} else{
+			chatHistory = []
+		}
+		
 	}
 	
 	const formattedHistory = chatHistory.map((message) => (
@@ -55,6 +56,7 @@ export async function generateAIResponse(sessionId: string, message: string) {
 	const chat = genAI.chats.create({
 		model: GEMINI_MODEL,
 		history: formattedHistory,
+		config: generationConfig,
 	})
 
 	const response = await retryRequest<>(()=>chat.sendMessage({ message: message }))
