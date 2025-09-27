@@ -28,19 +28,24 @@ export const HeroContent: React.FC<HeroContentProps> = ({
   ];
 
   return (
-    <section className="flex-1 flex flex-col items-center justify-center px-4 text-center">
+    <section className="flex-1 flex flex-col items-center justify-center px-5 text-center">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Headline */}
-        <h1 className="text-5xl font-bold leading-tight flex items-center gap-3 w-fit mx-auto *:font-[var(--font-geist-mono)]">
+        <h1 className="text-5xl font-bold leading-tight md:flex items-center gap-3 w-fit mx-auto *:font-[var(--font-geist-mono)] max-md:text-3xl text-balance">
           Your Solana
           <WordRotate
             words={["Security", "Trust", "Safety", "Analysis", "Protection"]}
           />
+          {" "}
+          <span className="md:hidden text-indigo-400 font-semibold">
+            Security
+          </span>
+          {" "}
           Sidekick.
         </h1>
 
         {/* Subtitle */}
-        <p className=" text-gray-300">
+        <p className=" text-gray-300 text-md max-md:text-sm text-balance">
           Sentinel analyzes tokens, detects scams, and protects your portfolio
           with real-time AI security ratings.
         </p>

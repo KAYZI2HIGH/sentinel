@@ -36,7 +36,7 @@ export function WordRotate({
 
   return (
     <motion.span
-      className="inline-block overflow-hidden align-bottom"
+      className="inline-block overflow-hidden align-bottom max-md:hidden"
       animate={{ width: containerWidth }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
     >
