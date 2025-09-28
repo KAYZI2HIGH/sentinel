@@ -23,7 +23,7 @@ const generationConfig = {
 };
 
 type ChatHistory = {
-	role: string,
+	role: "model" | "user",
 	content: string
 }
 
@@ -32,7 +32,12 @@ export async function generateAIResponse(sessionId: string, message: string) {
 	//get cached chat history
 	const redis = await getRedisClient()
 	
-	let chatHistory: ChatHistory[] = []
+	let chatHistory: ChatHistory[] = [
+		{
+			role: "model",
+			content: "Hello 👋 I can explain this token's trust analysis. Ask me anything about the security risks or patterns."
+		}
+	]
 	
 	if(redis.isReady){
 		const res = await redis.get(sessionId)

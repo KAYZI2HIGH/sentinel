@@ -28,15 +28,18 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { getSessionIdForToken } from "@/lib/utils";
+
 export default function SentinelDashboard() {
   const [messages, setMessages] = useState([
     {
-      role: "ai",
+      role: "model",
       text: "Hello 👋 I can explain this token's trust analysis. Ask me anything about the security risks or patterns.",
     },
   ]);
   const [input, setInput] = useState("");
   const [analysis, setAnalysis] = useState<SecurityAnalysis | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -49,6 +52,7 @@ export default function SentinelDashboard() {
 
         if (parsedData && parsedData.metadata && parsedData.metadata.symbol) {
           setAnalysis(parsedData);
+		  setSessionId(getSessionIdForToken(parsedData.metadata.tokenName))
         } else {
           throw new Error("Invalid analysis data structure");
         }
@@ -70,20 +74,39 @@ export default function SentinelDashboard() {
 
     setLoading(false);
   }, []);
-
-  const sendMessage = () => {
+  
+  console.log(sessionId)
+  const sendMessage = async () => {
     if (!input.trim()) return;
     setMessages([...messages, { role: "user", text: input }]);
-
+	
+	/*
     setTimeout(() => {
       setMessages((prev) => [
         ...prev,
         {
-          role: "ai",
+          role: "model",
           text: "Based on the contract code, I found that the liquidity pool can be withdrawn by the creator without notice.",
         },
       ]);
     }, 1000);
+	*/
+	
+	const res = await fetch("/api/chat", {
+		method: "POST",
+		body: JSON.stringify({ sessionId: sessionId, message: input })
+	})
+	
+	//TODO: add conditional
+	const { reply } = await res.json()
+	console.log(reply)
+	setMessages((prev)=>[
+		...prev,
+		{
+			role: "model",
+			text: reply
+		}
+	])
 
     setInput("");
   };
@@ -390,7 +413,7 @@ export default function SentinelDashboard() {
                 }`}
               >
                 <div className="flex items-start gap-3">
-                  {msg.role === "ai" && (
+                  {msg.role === "model" && (
                     <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-1">
                       <Shield className="w-3 h-3 text-blue-400" />
                     </div>

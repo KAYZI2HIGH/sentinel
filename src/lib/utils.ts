@@ -82,3 +82,18 @@ export async function retryRequest<T>(fn: () => Promise<T>, retries = 3, delay =
         throw err;
     }
 }
+
+export function getSessionIdForToken(tokenId: string): string {
+  const key = `sessionId:token:${tokenId}`;
+
+  let sessionId = sessionStorage.getItem(key);
+
+  if (!sessionId) {
+    sessionId = crypto.randomUUID(); 
+    // sessionId = Math.random().toString(36).slice(2, 12)
+
+    sessionStorage.setItem(key, sessionId);
+  }
+
+  return sessionId;
+}
