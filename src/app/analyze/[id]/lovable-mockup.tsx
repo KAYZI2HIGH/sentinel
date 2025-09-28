@@ -27,7 +27,7 @@ import {
 interface AnalyticsData {
   responseData: {
     success: boolean;
-    metadata: any;
+    metadata?: { id: string }; //dummy inference
     price: {
       value: number;
       liquidity: number;
@@ -52,7 +52,7 @@ interface AnalyticsData {
       address: string;
       timestamp: string;
     };
-    transactions: any[];
+    transactions: string[];
   };
   analysis: {
     trustScore: number;
@@ -82,7 +82,7 @@ interface AnalyticsData {
 const mockData: AnalyticsData = {
   responseData: {
     success: true,
-    metadata: {},
+    //metadata: {},
     price: {
       value: 0.4396,
       liquidity: 793317.99,
