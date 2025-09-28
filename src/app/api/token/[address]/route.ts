@@ -77,7 +77,7 @@ export async function GET(
                 return { priceData, priceSource };
               }
             }
-          } catch (birdeyeError) {
+          } catch  {
             console.log("Birdeye price failed, trying fallbacks...");
           }
 
@@ -103,7 +103,7 @@ export async function GET(
                 console.log("✅ Got price from DexScreener");
               }
             }
-          } catch (dexscreenerError) {
+          } catch {
             console.log("DexScreener also failed");
           }
 
@@ -125,7 +125,7 @@ export async function GET(
               return transactionsData;
             }
             return [];
-          } catch (txError) {
+          } catch {
             console.log("Transaction history unavailable");
             return [];
           }
@@ -148,7 +148,7 @@ export async function GET(
             const supplyResult = await supplyResponse.json();
             console.log("Supply result:", supplyResult);
             return supplyResult.result;
-          } catch (supplyError) {
+          } catch {
             console.log("Supply data unavailable");
             return null;
           }

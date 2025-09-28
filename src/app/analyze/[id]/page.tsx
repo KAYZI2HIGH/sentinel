@@ -69,7 +69,7 @@ export default function SentinelDashboard() {
     }
 
     setLoading(false);
-  }, [toast]);
+  }, []);
 
   const sendMessage = () => {
     if (!input.trim()) return;

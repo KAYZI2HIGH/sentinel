@@ -1,6 +1,7 @@
 import { getRedisClient } from "./redisClient";
 import {GoogleGenAI} from '@google/genai';
 import { retryRequest } from "@/lib/utils"
+import type { GenerateContentResponse } from "@google/genai";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
@@ -23,21 +24,21 @@ const generationConfig = {
 
 type ChatHistory = {
 	role: string,
-	content: string.
+	content: string
 }
 
 export async function generateAIResponse(sessionId: string, message: string) {
 	
 	//get cached chat history
-	let redis = await getRedisClient()
+	const redis = await getRedisClient()
 	
 	let chatHistory: ChatHistory[] = []
 	
 	if(redis.isReady){
-		let res = await redis.get(sessionId)
+		const res = await redis.get(sessionId)
 		if(res){
 			chatHistory = JSON.parse(res)
-			console.log(chatHistory)
+			//console.log(chatHistory)
 			console.log("cache hit")
 		} else{
 			console.log("cache miss")
@@ -59,7 +60,7 @@ export async function generateAIResponse(sessionId: string, message: string) {
 		config: generationConfig,
 	})
 
-	const response = await retryRequest<>(()=>chat.sendMessage({ message: message }))
+	const response = await retryRequest<GenerateContentResponse>(()=>chat.sendMessage({ message: message }))
 	const reply = response.text
 
 	const updatedHistory = [
@@ -67,7 +68,7 @@ export async function generateAIResponse(sessionId: string, message: string) {
 		{ role: "user", content: message },
 		{ role: "model", content: reply },
 	];
-	console.log(updatedHistory)
+	//console.log(updatedHistory)
 	await redis.setEx(sessionId, 60 * 30, JSON.stringify(updatedHistory));
 
 	return reply

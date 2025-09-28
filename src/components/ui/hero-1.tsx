@@ -31,7 +31,7 @@ const handleSendMessage = async () => {
         try {
           const errorData = await tokenRes.json();
           errorMessage = errorData.error || errorData.details || errorMessage;
-        } catch (parseError) {
+        } catch{
           errorMessage = tokenRes.statusText || errorMessage;
         }
         throw new Error(errorMessage);

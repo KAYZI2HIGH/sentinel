@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import { generateAIResponse } from "@/lib/aiService"
  
-export async function POST(request: NextRequest, { params }) {
+export async function POST(request: NextRequest) {
 	try{
 		const body = await request.json();
 		const { sessionId, message } = body;

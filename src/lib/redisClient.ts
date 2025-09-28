@@ -15,10 +15,10 @@ export const getRedisClient = async () => {
 	if(!redisClient){
 		redisClient = createClient({
 			username: 'default',
-			password: process.env.REDIS_PASSWORD,
+			password: process.env.REDIS_PASSWORD as string,
 			socket: {
-				host: process.env.REDIS_HOST,
-				port: process.env.REDIS_PORT
+				host: process.env.REDIS_HOST as string,
+				port: Number(process.env.REDIS_PORT),
 			}
 		});
 		redisClient.on('error', err => console.log('Redis Client Error', err));
