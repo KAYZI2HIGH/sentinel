@@ -1,5 +1,6 @@
 "use client";
-
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -404,24 +405,28 @@ export default function SentinelDashboard() {
         <ScrollArea className="flex-1 p-6 overflow-y-auto">
           <div className="space-y-4">
             {messages.map((msg, i) => (
-              <div
-                key={i}
-                className={`p-4 rounded-xl max-w-[85%] ${
-                  msg.role === "user"
-                    ? "bg-blue-500/20 ml-auto border border-blue-500/30"
-                    : "bg-gray-800/50 border border-gray-700 mr-auto"
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  {msg.role === "model" && (
-                    <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-1">
-                      <Shield className="w-3 h-3 text-blue-400" />
-                    </div>
-                  )}
-                  <div className="text-sm leading-relaxed">{msg.text}</div>
-                </div>
-              </div>
-            ))}
+			  <div
+				key={i}
+				className={`p-4 rounded-xl max-w-[85%] ${
+				  msg.role === "user"
+					? "bg-blue-500/20 ml-auto border border-blue-500/30"
+					: "bg-gray-800/50 border border-gray-700 mr-auto"
+				}`}
+			  >
+				<div className="flex items-start gap-3">
+				  {msg.role === "model" && (
+					<div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-1">
+					  <Shield className="w-3 h-3 text-blue-400" />
+					</div>
+				  )}
+				  <div className="text-sm leading-relaxed prose prose-invert max-w-none">
+					<ReactMarkdown remarkPlugins={[remarkGfm]}>
+					  {msg.text}
+					</ReactMarkdown>
+				  </div>
+				</div>
+			  </div>
+			))}
           </div>
         </ScrollArea>
 

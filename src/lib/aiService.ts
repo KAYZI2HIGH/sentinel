@@ -74,7 +74,7 @@ export async function generateAIResponse(sessionId: string, message: string) {
 		{ role: "model", content: reply },
 	];
 	//console.log(updatedHistory)
-	await redis.setEx(sessionId, 60 * 30, JSON.stringify(updatedHistory));
+	await redis.setEx(sessionId, 60 * 10, JSON.stringify(updatedHistory));
 
 	return reply
 }
