@@ -93,9 +93,10 @@ export default function SentinelDashboard() {
     }, 1000);
 	*/
 	
+	setInput("");	
 	const res = await fetch("/api/chat", {
 		method: "POST",
-		body: JSON.stringify({ sessionId: sessionId, message: input })
+		body: JSON.stringify({ sessionId: sessionId, message: input, analysis })
 	})
 	
 	//TODO: add conditional
@@ -108,8 +109,6 @@ export default function SentinelDashboard() {
 			text: reply
 		}
 	])
-
-    setInput("");
   };
 
   const getTokenName = () => analysis?.metadata?.tokenName || "Unknown Token";

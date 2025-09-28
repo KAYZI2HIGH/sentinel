@@ -5,9 +5,9 @@ import { generateAIResponse } from "@/lib/aiService"
 export async function POST(request: NextRequest) {
 	try{
 		const body = await request.json();
-		const { sessionId, message } = body;
+		const { sessionId, message, analysis } = body;
 		
-		const reply = await generateAIResponse(sessionId, message)
+		const reply = await generateAIResponse(sessionId, message, analysis)
 		
 		return NextResponse.json({ reply }, { status: 200 })
 	}catch(error){

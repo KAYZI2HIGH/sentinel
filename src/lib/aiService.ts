@@ -14,23 +14,35 @@ const genAI = new GoogleGenAI({apiKey: GEMINI_API_KEY});
 
 const GEMINI_MODEL = "gemini-2.0-flash";
 
-const generationConfig = {
-    temperature: 1,
-    topP: 0.95,
-    topK: 64,
-    maxOutputTokens: 2048,
-    responseMimeType: "text/plain",
-};
+const systemPrompt = (analysis: string): string => `
+You are an expert crypto analyst assistant. 
+Your role is to help the user analyze and understand details about a token. 
+Here is the current analysis of the token they are viewing:
+
+---
+${analysis ? analysis : "no analysis provided for current token"}
+---
+
+When answering:
+- Always use the provided analysis as the main context. 
+- If the user asks about the token, ground your answers in the analysis first before giving general market knowledge. 
+- If something is not included in the analysis, state that clearly instead of making up information. 
+- Keep responses clear, concise, and in a helpful explanatory tone. 
+- Format your responses in Markdown for readability (lists, **bold**, *italics*, code blocks if needed).
+`
+
+
 
 type ChatHistory = {
 	role: "model" | "user",
 	content: string
 }
 
-export async function generateAIResponse(sessionId: string, message: string) {
+export async function generateAIResponse(sessionId: string, message: string, analysis: string) {
 	
 	//get cached chat history
 	const redis = await getRedisClient()
+	
 	
 	let chatHistory: ChatHistory[] = [
 		{
@@ -50,6 +62,16 @@ export async function generateAIResponse(sessionId: string, message: string) {
 		}
 		
 	}
+	
+	//preparing for ai request
+	const generationConfig = {
+		temperature: 1,
+		topP: 0.95,
+		topK: 64,
+		maxOutputTokens: 2048,
+		responseMimeType: "text/plain",
+		systemInstruction: [systemPrompt(analysis)]
+	};
 	
 	const formattedHistory = chatHistory.map((message) => (
 		{
