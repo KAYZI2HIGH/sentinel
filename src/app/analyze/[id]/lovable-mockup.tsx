@@ -1,5 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import React, { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,6 +24,8 @@ import {
   Zap,
   Target,
 } from "lucide-react";
+
+import { getSessionIdForToken } from "@/lib/utils";
 
 // Mock data structure - replace with your actual props interface
 interface AnalyticsData {
@@ -164,22 +168,46 @@ const GradientBackgrounds = () => (
 const AnalyticsPage: React.FC<{ data?: AnalyticsData }> = ({ 
   data = mockData 
 }) => {
-  const [input, setInput] = useState("");
   const [messages, setMessages] = useState([
     {
-      role: "ai",
-      text: "Hello! I've analyzed this token for you. Feel free to ask any questions about the security analysis.",
+      role: "model",
+      text: "Hello 👋 I can explain this token's trust analysis. Ask me anything about the security risks or patterns.",
     },
   ]);
+  const [input, setInput] = useState("");
+  //Distinguish betweeen lovable analysis variable and actual state
+  const [analysis_, setAnalysis] = useState<AnalyticsData | null>(null)//useState<SecurityAnalysis | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null)
+  //const [loading, setLoading] = useState(true);
+  
+  useEffect(()=>{
+	setSessionId(getSessionIdForToken("JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"));
+	setAnalysis(data)
+  }, [data])
+  
 
-  const sendMessage = () => {
+
+  //console.log(sessionId)
+  const sendMessage = async () => {
     if (!input.trim()) return;
-    
-    setMessages(prev => [...prev, 
-      { role: "user", text: input },
-      { role: "ai", text: "I'm analyzing your question about the token security. This is a preview response." }
-    ]);
-    setInput("");
+    setMessages([...messages, { role: "user", text: input }]);
+	
+	setInput("");	
+	const res = await fetch("/api/chat", {
+		method: "POST",
+		body: JSON.stringify({ sessionId: sessionId, message: input, analysis: analysis_ })
+	})
+	
+	//TODO: add conditional
+	const { reply } = await res.json()
+	console.log(reply)
+	setMessages((prev)=>[
+		...prev,
+		{
+			role: "model",
+			text: reply
+		}
+	])
   };
 
   const { responseData, analysis } = data;
@@ -618,24 +646,28 @@ const AnalyticsPage: React.FC<{ data?: AnalyticsData }> = ({
         <ScrollArea className="flex-1 p-6 overflow-y-auto">
           <div className="space-y-4">
             {messages.map((msg, i) => (
-              <div
-                key={i}
-                className={`p-4 rounded-xl max-w-[85%] ${
-                  msg.role === "user"
-                    ? "bg-blue-500/20 ml-auto border border-blue-500/30"
-                    : "bg-gray-800/50 border border-gray-700 mr-auto"
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  {msg.role === "ai" && (
-                    <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-1">
-                      <Shield className="w-3 h-3 text-blue-400" />
-                    </div>
-                  )}
-                  <div className="text-sm leading-relaxed">{msg.text}</div>
-                </div>
-              </div>
-            ))}
+			  <div
+				key={i}
+				className={`p-4 rounded-xl max-w-[85%] ${
+				  msg.role === "user"
+					? "bg-blue-500/20 ml-auto border border-blue-500/30"
+					: "bg-gray-800/50 border border-gray-700 mr-auto"
+				}`}
+			  >
+				<div className="flex items-start gap-3">
+				  {msg.role === "model" && (
+					<div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-1">
+					  <Shield className="w-3 h-3 text-blue-400" />
+					</div>
+				  )}
+				  <div className="text-sm leading-relaxed prose prose-invert max-w-none">
+					<ReactMarkdown remarkPlugins={[remarkGfm]}>
+					  {msg.text}
+					</ReactMarkdown>
+				  </div>
+				</div>
+			  </div>
+			))}
           </div>
         </ScrollArea>
 

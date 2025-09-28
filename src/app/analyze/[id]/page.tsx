@@ -1,37 +1,173 @@
 "use client";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import React, { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { GradientBackgrounds } from "@/components/ui/hero-1";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import {
-  calculateDaysFromNow,
-  formatCurrency,
-  formatDaysDifference,
-  formatLargeNumber,
-} from "@/lib/utils";
-import { SecurityAnalysis } from "@/type";
-import {
-  Activity,
   AlertTriangle,
   BarChart3,
-  Clock,
-  DollarSign,
-  ExternalLink,
   Shield,
   Users,
+  ExternalLink,
+  DollarSign,
+  Activity,
+  Clock,
+  TrendingUp,
+  Zap,
+  Target,
 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
 
 import { getSessionIdForToken } from "@/lib/utils";
 
-export default function SentinelDashboard() {
+// Mock data structure - replace with your actual props interface
+interface AnalyticsData {
+  responseData: {
+    success: boolean;
+    metadata?: { id: string }; //dummy inference
+    price: {
+      value: number;
+      liquidity: number;
+      priceChange24h: number;
+    };
+    extractedInfo: {
+      tokenName: string;
+      symbol: string;
+      creator: string;
+      createdAt: string;
+      holders: number;
+      liquidity: number;
+      marketCap: number;
+      price: number;
+      volume24h: number;
+      isMutable: boolean;
+      royaltyModel: string;
+      hasPriceData: boolean;
+      hasLiquidity: boolean;
+    };
+    basicInfo: {
+      address: string;
+      timestamp: string;
+    };
+    transactions: string[];
+  };
+  analysis: {
+    trustScore: number;
+    riskLevel: string;
+    riskFactors: Array<{
+      factor: string;
+      severity: string;
+      description: string;
+      evidence?: string;
+      impact?: string;
+    }>;
+    categoryScores: {
+      contractSecurity: number;
+      marketIntegrity: number;
+      creatorCredibility: number;
+      transactionPatterns: number;
+      communityTrust: number;
+    };
+    recommendations: string[];
+    alerts: string[];
+    summary: string;
+    confidence: number;
+  };
+}
+
+// Mock data for preview
+const mockData: AnalyticsData = {
+  responseData: {
+    success: true,
+    //metadata: {},
+    price: {
+      value: 0.4396,
+      liquidity: 793317.99,
+      priceChange24h: 1.23,
+    },
+    extractedInfo: {
+      tokenName: "Jupiter",
+      symbol: "JUP",
+      creator: "Unknown",
+      createdAt: "2025-09-28",
+      holders: 30767654042599,
+      liquidity: 793317.99,
+      marketCap: 3076765404259930,
+      price: 0.4396,
+      volume24h: 1.23,
+      isMutable: true,
+      royaltyModel: "creators",
+      hasPriceData: true,
+      hasLiquidity: true,
+    },
+    basicInfo: {
+      address: "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+      timestamp: "2025-09-28T17:49:04.682Z",
+    },
+    transactions: [],
+  },
+  analysis: {
+    trustScore: 70,
+    riskLevel: "moderate",
+    riskFactors: [
+      {
+        factor: "Mutable Contract",
+        severity: "medium",
+        description: "The token's mutability introduces potential for undesirable changes",
+        evidence: "isMutable: true",
+        impact: "Reduced trust",
+      },
+      {
+        factor: "Unknown Creator",
+        severity: "medium",
+        description: "Creator identity is not verified, posing reputation risks",
+        evidence: "creator: Unknown",
+        impact: "Trust concerns",
+      },
+      {
+        factor: "Low volume",
+        severity: "low",
+        description: "The low trading volume poses minor risks.",
+      },
+    ],
+    categoryScores: {
+      contractSecurity: 60,
+      marketIntegrity: 70,
+      creatorCredibility: 55,
+      transactionPatterns: 70,
+      communityTrust: 65,
+    },
+    recommendations: [
+      "Exercise caution due to contract mutability.",
+      "Investigate creator's reputation before significant investment.",
+      "Monitor volume changes.",
+    ],
+    alerts: [
+      "Verify the token smart contract address and metadata against reliable sources, especially if you are unsure of the token's legitimacy.",
+    ],
+    summary: "Jupiter (JUP) shows moderate security risks due to its mutability and the unknown identity of its creator, but a safe range liquidity.",
+    confidence: 0.7,
+  },
+};
+
+const GradientBackgrounds = () => (
+  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+    <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-green-500/5 rounded-full blur-3xl"></div>
+  </div>
+);
+
+const AnalyticsPage: React.FC<{ data?: AnalyticsData }> = ({ 
+  data = mockData 
+}) => {
   const [messages, setMessages] = useState([
     {
       role: "model",
@@ -39,64 +175,27 @@ export default function SentinelDashboard() {
     },
   ]);
   const [input, setInput] = useState("");
-  const [analysis, setAnalysis] = useState<SecurityAnalysis | null>(null);
-  const [sessionId, setSessionId] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const analysisData = urlParams.get("data");
-
-    if (analysisData) {
-      try {
-        const parsedData = JSON.parse(analysisData);
-
-        if (parsedData && parsedData.metadata && parsedData.metadata.symbol) {
-          setAnalysis(parsedData);
-		  setSessionId(getSessionIdForToken(parsedData.metadata.tokenName))
-        } else {
-          throw new Error("Invalid analysis data structure");
-        }
-      } catch (error) {
-        console.error("Error parsing analysis data:", error);
-        toast.error("Invalid Analysis Data", {
-          description:
-            "The token analysis data is corrupted. Please try analyzing again.",
-          className: "!bg-red-500 !text-white",
-        });
-      }
-    } else {
-      toast.error("No Analysis Data", {
-        description:
-          "No token analysis data found. Please analyze a token first.",
-        className: "!bg-red-500 !text-white",
-      });
-    }
-
-    setLoading(false);
-  }, []);
+  //Distinguish betweeen lovable analysis variable and actual state
+  const [analysis_, setAnalysis] = useState<AnalyticsData | null>(null)//useState<SecurityAnalysis | null>(null);
+  const [sessionId, setSessionId] = useState<string>("")
+  //const [loading, setLoading] = useState(true);
   
-  console.log(sessionId)
+  useEffect(()=>{
+	setSessionId(getSessionIdForToken("JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"));
+	setAnalysis(data)
+  }, [data])
+  
+
+
+  //console.log(sessionId)
   const sendMessage = async () => {
     if (!input.trim()) return;
     setMessages([...messages, { role: "user", text: input }]);
 	
-	/*
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "model",
-          text: "Based on the contract code, I found that the liquidity pool can be withdrawn by the creator without notice.",
-        },
-      ]);
-    }, 1000);
-	*/
-	
 	setInput("");	
 	const res = await fetch("/api/chat", {
 		method: "POST",
-		body: JSON.stringify({ sessionId: sessionId, message: input, analysis })
+		body: JSON.stringify({ sessionId: sessionId, message: input, analysis: analysis_ })
 	})
 	
 	//TODO: add conditional
@@ -111,48 +210,58 @@ export default function SentinelDashboard() {
 	])
   };
 
-  const getTokenName = () => analysis?.metadata?.tokenName || "Unknown Token";
-  const getTokenSymbol = () => analysis?.metadata?.symbol || "UNKNOWN";
-  const getRiskLevel = () => analysis?.riskLevel || "medium";
-  const getTrustScore = () => analysis?.trustScore || 0;
-  const getCreatedAt = () =>
-    formatDaysDifference(
-      calculateDaysFromNow(analysis?.metadata?.createdAt || "N/A")
-    );
-  const getHolders = () => formatLargeNumber(analysis?.metadata?.holders || 0);
-  const getLiquidity = () => formatCurrency(analysis?.metadata?.liquidity || 0);
-  const getMarketCap = () => formatCurrency(analysis?.metadata?.marketCap || 0);
+  const { responseData, analysis } = data;
+  const { extractedInfo } = responseData;
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-[#0c0414] text-white">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p>Loading analysis...</p>
-        </div>
-      </div>
-    );
-  }
+  const getRiskBadgeVariant = (riskLevel: string) => {
+    switch (riskLevel) {
+      case "critical":
+      case "high":
+        return "destructive";
+      case "medium":
+      case "moderate":
+        return "secondary";
+      default:
+        return "default";
+    }
+  };
 
-  if (!analysis) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-[#0c0414] text-white">
-        <div className="text-center">
-          <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-semibold mb-2">Analysis Not Found</h2>
-          <p className="text-gray-400 mb-4">
-            The token analysis data is unavailable or invalid.
-          </p>
-          <Button
-            onClick={() => (window.location.href = "/")}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            Analyze Another Token
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  const getTrustScoreColor = (score: number) => {
+    if (score >= 70) return "text-green-400";
+    if (score >= 40) return "text-yellow-400";
+    return "text-red-400";
+  };
+
+  const formatNumber = (num: number) => {
+    if (num >= 1e9) return `${(num / 1e9).toFixed(2)}B`;
+    if (num >= 1e6) return `${(num / 1e6).toFixed(2)}M`;
+    if (num >= 1e3) return `${(num / 1e3).toFixed(2)}K`;
+    return num.toLocaleString();
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 6,
+    }).format(amount);
+  };
+
+  const getScoreData = () => {
+    return Object.entries(analysis.categoryScores).map(([category, score]) => ({
+      category: category.replace(/([A-Z])/g, ' $1').trim(),
+      score,
+      fill: getScoreColor(score),
+    }));
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return "hsl(142, 76%, 36%)"; // green
+    if (score >= 60) return "hsl(47, 96%, 53%)"; // yellow
+    if (score >= 40) return "hsl(25, 95%, 53%)"; // orange
+    return "hsl(0, 84%, 60%)"; // red
+  };
 
   return (
     <div className="flex relative h-screen overflow-x-hidden bg-[#0c0414] text-white">
@@ -166,25 +275,18 @@ export default function SentinelDashboard() {
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <h2 className="text-2xl font-semibold">
-                  {getTokenName()} ({getTokenSymbol()})
+                  {extractedInfo.tokenName} ({extractedInfo.symbol})
                 </h2>
                 <Badge
-                  variant={
-                    getRiskLevel() === "critical" || getRiskLevel() === "high"
-                      ? "destructive"
-                      : getRiskLevel() === "medium"
-                      ? "secondary"
-                      : "default"
-                  }
+                  variant={getRiskBadgeVariant(analysis.riskLevel)}
                   className="text-sm"
                 >
                   <AlertTriangle className="w-3 h-3 mr-1" />
-                  {getRiskLevel().toUpperCase()} Risk
+                  {analysis.riskLevel.toUpperCase()} Risk
                 </Badge>
               </div>
               <p className="text-sm text-gray-400">
-                Solana token created {getCreatedAt()} • {getHolders()}{" "}
-                holders
+                Solana token created {extractedInfo.createdAt} • {formatNumber(extractedInfo.holders)} holders
               </p>
             </div>
             <Button
@@ -202,20 +304,12 @@ export default function SentinelDashboard() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-medium">Overall Trust Score</span>
-                <span
-                  className={`text-2xl font-bold ${
-                    getTrustScore() >= 70
-                      ? "text-green-400"
-                      : getTrustScore() >= 40
-                      ? "text-yellow-400"
-                      : "text-red-400"
-                  }`}
-                >
-                  {getTrustScore()}%
+                <span className={`text-2xl font-bold ${getTrustScoreColor(analysis.trustScore)}`}>
+                  {analysis.trustScore}%
                 </span>
               </div>
               <Progress
-                value={getTrustScore()}
+                value={analysis.trustScore}
                 className="h-2 bg-gray-700"
               />
               <div className="flex justify-between text-xs text-gray-400 mt-1">
@@ -223,48 +317,40 @@ export default function SentinelDashboard() {
                 <span>Moderate</span>
                 <span>Safe</span>
               </div>
+              <div className="mt-3 text-xs text-gray-300">
+                Confidence: {Math.round(analysis.confidence * 100)}%
+              </div>
             </CardContent>
           </Card>
 
-          <Tabs
-            defaultValue="analysis"
-            className="space-y-6"
-          >
-            <TabsList className="grid w-full grid-cols-3 bg-gray-800/50">
-              <TabsTrigger
-                value="analysis"
-                className="flex items-center gap-2"
-              >
+          <Tabs defaultValue="analysis" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-4 bg-gray-800/50">
+              <TabsTrigger value="analysis" className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" />
                 Analysis
               </TabsTrigger>
-              <TabsTrigger
-                value="risks"
-                className="flex items-center gap-2"
-              >
+              <TabsTrigger value="risks" className="flex items-center gap-2">
                 <Shield className="w-4 h-4" />
                 Risk Factors
               </TabsTrigger>
-              <TabsTrigger
-                value="similar"
-                className="flex items-center gap-2"
-              >
+              <TabsTrigger value="scores" className="flex items-center gap-2">
+                <Target className="w-4 h-4" />
+                Scores
+              </TabsTrigger>
+              <TabsTrigger value="similar" className="flex items-center gap-2">
                 <Users className="w-4 h-4" />
-                Similar Tokens
+                Similar
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent
-              value="analysis"
-              className="space-y-6"
-            >
+            <TabsContent value="analysis" className="space-y-6">
               {/* Key Metrics Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <Card className="bg-gray-800/30 border-gray-700">
                   <CardContent className="p-4 text-center">
                     <DollarSign className="w-6 h-6 mx-auto mb-2 text-yellow-400" />
-                    <div className="text-2xl font-bold">
-                      {getLiquidity().toLocaleString()}
+                    <div className="text-lg font-bold">
+                      {formatCurrency(extractedInfo.liquidity)}
                     </div>
                     <div className="text-xs text-gray-400">Liquidity</div>
                   </CardContent>
@@ -272,8 +358,8 @@ export default function SentinelDashboard() {
                 <Card className="bg-gray-800/30 border-gray-700">
                   <CardContent className="p-4 text-center">
                     <Activity className="w-6 h-6 mx-auto mb-2 text-blue-400" />
-                    <div className="text-2xl font-bold">
-                      {getMarketCap().toLocaleString()}
+                    <div className="text-lg font-bold">
+                      ${formatNumber(extractedInfo.marketCap)}
                     </div>
                     <div className="text-xs text-gray-400">Market Cap</div>
                   </CardContent>
@@ -281,103 +367,259 @@ export default function SentinelDashboard() {
                 <Card className="bg-gray-800/30 border-gray-700">
                   <CardContent className="p-4 text-center">
                     <Users className="w-6 h-6 mx-auto mb-2 text-green-400" />
-                    <div className="text-2xl font-bold">
-                      {getHolders().toLocaleString()}
+                    <div className="text-lg font-bold">
+                      {formatNumber(extractedInfo.holders)}
                     </div>
                     <div className="text-xs text-gray-400">Holders</div>
                   </CardContent>
                 </Card>
                 <Card className="bg-gray-800/30 border-gray-700">
                   <CardContent className="p-4 text-center">
-                    <Clock className="w-6 h-6 mx-auto mb-2 text-purple-400" />
-                    <div className="text-2xl font-bold">{getCreatedAt()}</div>
-                    <div className="text-xs text-gray-400">Age (days)</div>
+                    <TrendingUp className="w-6 h-6 mx-auto mb-2 text-purple-400" />
+                    <div className="text-lg font-bold">
+                      {extractedInfo.volume24h > 0 ? '+' : ''}{extractedInfo.volume24h}%
+                    </div>
+                    <div className="text-xs text-gray-400">24h Change</div>
+                  </CardContent>
+                </Card>
+                <Card className="bg-gray-800/30 border-gray-700">
+                  <CardContent className="p-4 text-center">
+                    <Clock className="w-6 h-6 mx-auto mb-2 text-orange-400" />
+                    <div className="text-lg font-bold">{formatCurrency(extractedInfo.price)}</div>
+                    <div className="text-xs text-gray-400">Current Price</div>
                   </CardContent>
                 </Card>
               </div>
 
-              {/* Risk Factors */}
+              {/* Security Score Breakdown Chart */}
+              <Card className="bg-gray-800/30 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <BarChart3 className="w-5 h-5 text-blue-400" />
+                    Security Score Breakdown
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ChartContainer
+                    config={{
+                      score: {
+                        label: "Score",
+                        color: "hsl(var(--chart-1))",
+                      },
+                    }}
+                    className="h-[300px]"
+                  >
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={getScoreData()} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                        <XAxis 
+                          dataKey="category" 
+                          stroke="rgba(255,255,255,0.6)"
+                          fontSize={12}
+                          angle={-45}
+                          textAnchor="end"
+                          height={80}
+                        />
+                        <YAxis stroke="rgba(255,255,255,0.6)" fontSize={12} />
+                        <ChartTooltip 
+                          content={<ChartTooltipContent />}
+                          cursor={{ fill: 'rgba(255,255,255,0.1)' }}
+                        />
+                        <Bar 
+                          dataKey="score" 
+                          fill="hsl(var(--chart-1))"
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+                    {Object.entries(analysis.categoryScores).map(([category, score]) => (
+                      <div key={category} className="text-center">
+                        <div className={`text-lg font-bold ${getTrustScoreColor(score)}`}>
+                          {score}%
+                        </div>
+                        <div className="text-xs text-gray-400 capitalize">
+                          {category.replace(/([A-Z])/g, ' $1').trim()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Token Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card className="bg-gray-800/30 border-gray-700">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Zap className="w-5 h-5 text-blue-400" />
+                      Token Details
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Address</span>
+                      <span className="text-sm font-mono">{responseData.basicInfo.address.slice(0, 8)}...{responseData.basicInfo.address.slice(-8)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Creator</span>
+                      <span className="text-sm">{extractedInfo.creator}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Mutable</span>
+                      <Badge variant={extractedInfo.isMutable ? "destructive" : "default"}>
+                        {extractedInfo.isMutable ? "Yes" : "No"}
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Royalty Model</span>
+                      <span className="text-sm capitalize">{extractedInfo.royaltyModel}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Has Liquidity</span>
+                      <Badge variant={extractedInfo.hasLiquidity ? "default" : "destructive"}>
+                        {extractedInfo.hasLiquidity ? "Yes" : "No"}
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gray-800/30 border-gray-700">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <AlertTriangle className="w-5 h-5 text-yellow-400" />
+                      AI Analysis Summary
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-300 leading-relaxed mb-4">{analysis.summary}</p>
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-blue-400"></div>
+                        <span className="text-gray-400">Confidence: {Math.round(analysis.confidence * 100)}%</span>
+                      </div>
+                      <Badge variant={getRiskBadgeVariant(analysis.riskLevel)} className="capitalize">
+                        {analysis.riskLevel} Risk
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Top Risk Factors Preview */}
               <Card className="bg-gray-800/30 border-gray-700">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <AlertTriangle className="w-5 h-5 text-red-400" />
-                    Risk Factors Detected
+                    Critical Risk Factors
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {analysis.riskFactors && analysis.riskFactors.length > 0 ? (
-                    analysis.riskFactors.slice(0, 3).map((factor, index) => (
-                      <div
-                        key={index}
-                        className={`flex items-center gap-3 p-3 rounded-lg ${
-                          factor.severity === "critical" ||
-                          factor.severity === "high"
-                            ? "bg-red-400/10"
-                            : "bg-yellow-400/10"
+                  {analysis.riskFactors.slice(0, 3).map((factor, index) => (
+                    <div
+                      key={index}
+                      className={`flex items-start gap-3 p-4 rounded-lg border ${
+                        factor.severity === "critical" || factor.severity === "high"
+                          ? "bg-red-400/10 border-red-400/20"
+                          : factor.severity === "medium"
+                          ? "bg-yellow-400/10 border-yellow-400/20"
+                          : "bg-blue-400/10 border-blue-400/20"
+                      }`}
+                    >
+                      <AlertTriangle
+                        className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
+                          factor.severity === "critical" || factor.severity === "high"
+                            ? "text-red-400"
+                            : factor.severity === "medium"
+                            ? "text-yellow-400"
+                            : "text-blue-400"
                         }`}
-                      >
-                        <AlertTriangle
-                          className={`w-4 h-4 flex-shrink-0 ${
-                            factor.severity === "critical" ||
-                            factor.severity === "high"
-                              ? "text-red-400"
-                              : "text-yellow-400"
-                          }`}
-                        />
-                        <div>
-                          <div className="font-medium">{factor.factor}</div>
-                          <div className="text-sm text-gray-400">
-                            {factor.description}
+                      />
+                      <div className="flex-1">
+                        <div className="font-medium mb-1">{factor.factor}</div>
+                        <div className="text-sm text-gray-400 mb-2">{factor.description}</div>
+                        {factor.evidence && (
+                          <div className="text-xs text-gray-500 bg-gray-700/50 p-2 rounded mb-1">
+                            <strong>Evidence:</strong> {factor.evidence}
                           </div>
-                        </div>
+                        )}
+                        {factor.impact && (
+                          <div className="text-xs text-gray-500">
+                            <strong>Impact:</strong> {factor.impact}
+                          </div>
+                        )}
                       </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-4 text-gray-400">
-                      No specific risk factors identified
+                      <Badge variant={getRiskBadgeVariant(factor.severity)} className="mt-1">
+                        {factor.severity}
+                      </Badge>
                     </div>
-                  )}
+                  ))}
                 </CardContent>
               </Card>
             </TabsContent>
 
-            <TabsContent value="risks">
-              <div className="space-y-3">
-                {analysis.riskFactors && analysis.riskFactors.length > 0 ? (
-                  analysis.riskFactors.map((factor, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-3 bg-gray-800/30 rounded-lg"
-                    >
+            <TabsContent value="risks" className="space-y-4">
+              {analysis.riskFactors.map((factor, index) => (
+                <Card key={index} className="bg-gray-800/30 border-gray-700">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
-                        <span className="font-medium block">
-                          {factor.factor}
-                        </span>
-                        <span className="text-sm text-gray-400">
-                          {factor.description}
-                        </span>
+                        <div className="font-medium text-lg mb-1">{factor.factor}</div>
+                        <p className="text-gray-400 text-sm mb-2">{factor.description}</p>
+                        {factor.evidence && (
+                          <div className="text-xs text-gray-500 bg-gray-700/50 p-2 rounded">
+                            Evidence: {factor.evidence}
+                          </div>
+                        )}
+                        {factor.impact && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            Impact: {factor.impact}
+                          </div>
+                        )}
                       </div>
-                      <Badge
-                        variant={
-                          factor.severity === "critical"
-                            ? "destructive"
-                            : factor.severity === "high"
-                            ? "destructive"
-                            : factor.severity === "medium"
-                            ? "secondary"
-                            : "default"
-                        }
-                      >
+                      <Badge variant={getRiskBadgeVariant(factor.severity)}>
                         {factor.severity}
                       </Badge>
                     </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-gray-400">
-                    No risk factors available for this token
-                  </div>
-                )}
-              </div>
+                  </CardContent>
+                </Card>
+              ))}
+              
+              {/* Recommendations */}
+              <Card className="bg-gray-800/30 border-gray-700">
+                <CardHeader>
+                  <CardTitle>Recommendations</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {analysis.recommendations.map((rec, index) => (
+                      <li key={index} className="flex items-start gap-2 text-sm">
+                        <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 flex-shrink-0"></div>
+                        <span className="text-gray-300">{rec}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="scores" className="space-y-4">
+              {Object.entries(analysis.categoryScores).map(([category, score]) => (
+                <Card key={category} className="bg-gray-800/30 border-gray-700">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm font-medium capitalize">
+                        {category.replace(/([A-Z])/g, ' $1').trim()}
+                      </span>
+                      <span className={`text-xl font-bold ${getTrustScoreColor(score)}`}>
+                        {score}%
+                      </span>
+                    </div>
+                    <Progress value={score} className="h-2 bg-gray-700" />
+                  </CardContent>
+                </Card>
+              ))}
             </TabsContent>
 
             <TabsContent value="similar">
@@ -390,7 +632,7 @@ export default function SentinelDashboard() {
       </main>
 
       {/* Right side → AI Chat */}
-      <aside className="w-[380px] flex flex-col ">
+      <aside className="w-[380px] flex flex-col">
         <div className="p-6 border-b border-gray-800">
           <h2 className="text-xl font-semibold flex items-center gap-2">
             <Shield className="w-5 h-5 text-blue-400" />
@@ -450,9 +692,7 @@ export default function SentinelDashboard() {
               variant="outline"
               size="sm"
               className="text-xs flex-1 border-gray-700"
-              onClick={() =>
-                setInput("Explain the liquidity risks for this token")
-              }
+              onClick={() => setInput("Explain the liquidity risks for this token")}
             >
               Explain liquidity risk
             </Button>
@@ -469,4 +709,6 @@ export default function SentinelDashboard() {
       </aside>
     </div>
   );
-}
+};
+
+export default AnalyticsPage;

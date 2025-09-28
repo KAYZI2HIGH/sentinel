@@ -14,13 +14,15 @@ const genAI = new GoogleGenAI({apiKey: GEMINI_API_KEY});
 
 const GEMINI_MODEL = "gemini-2.0-flash";
 
+//inspect analysis prop spread when migrating from lovable
+//the JSON.stringify  is a hot fix to the object analysis being passed from lovable
 const systemPrompt = (analysis: string): string => `
 You are an expert crypto analyst assistant. 
 Your role is to help the user analyze and understand details about a token. 
 Here is the current analysis of the token they are viewing:
 
 ---
-${analysis ? analysis : "no analysis provided for current token"}
+${analysis ? JSON.stringify(analysis) : "no analysis provided for current token"}
 ---
 
 When answering:
@@ -51,19 +53,25 @@ export async function generateAIResponse(sessionId: string, message: string, ana
 		}
 	]
 	
+	console.log(sessionId)
 	if(redis.isReady){
-		const res = await redis.get(sessionId)
-		if(res){
-			chatHistory = JSON.parse(res)
-			//console.log(chatHistory)
-			console.log("cache hit")
-		} else{
-			console.log("cache miss")
-		}
-		
+		//session id guard
+		if(!sessionId){
+			console.log("no session id. Investigate")
+		}else if(sessionId){
+			const res = await redis.get(sessionId)
+				if(res){
+					console.log(res)
+					chatHistory = JSON.parse(res)
+					console.log("cache hit")
+				} else{
+					console.log("cache miss")
+				}
+			}
 	}
 	
 	//preparing for ai request
+	console.log(systemPrompt(analysis))
 	const generationConfig = {
 		temperature: 1,
 		topP: 0.95,
@@ -95,7 +103,7 @@ export async function generateAIResponse(sessionId: string, message: string, ana
 		{ role: "user", content: message },
 		{ role: "model", content: reply },
 	];
-	//console.log(updatedHistory)
+	//console.log(updatedHistory) 
 	await redis.setEx(sessionId, 60 * 10, JSON.stringify(updatedHistory));
 
 	return reply
