@@ -13,8 +13,8 @@ export async function POST(request: Request) {
     IMPORTANT REQUIREMENTS:
     1. Return ONLY valid JSON - no other text, markdown, or explanations
     2. NO field can be empty/null - provide estimates based on your knowledge
-    3. Use your existing knowledge about well-known tokens when data is limited
-    4. If token data is incomplete, make reasonable estimates based on token reputation and market standards
+    3. Use your existing knowledge about token reputation, market cap, and community trust
+    4. Be realistic - not every token should score 85. Provide genuine assessment.
 
     TOKEN DATA:
     ${JSON.stringify(tokenData.extractedInfo, null, 2)}
@@ -22,47 +22,57 @@ export async function POST(request: Request) {
     FULL DATA CONTEXT:
     ${JSON.stringify(tokenData, null, 2)}
 
-    ANALYSIS CRITERIA:
+    ANALYSIS CRITERIA (BE REALISTIC AND VARIED):
 
-    CONTRACT SAFETY:
-    - Verified contract: +20 points
-    - No mint function: +15 points  
-    - Immutable contract: +10 points
-    - Audited: +15 points
+    TOKEN REPUTATION & ADOPTION (0-30 points):
+    - Top 50 market cap, widely recognized: 25-30 points
+    - Established project with strong community: 20-25 points  
+    - Medium popularity, some adoption: 15-20 points
+    - New/unknown token, limited adoption: 5-15 points
+    - Suspected scam/fake token: 0-5 points
 
-    LIQUIDITY & MARKET:
-    - Liquidity > $1M: +20 points
-    - Liquidity $100K-$1M: +10 points
-    - Liquidity < $10K: -20 points
-    - Locked liquidity: +15 points
+    CONTRACT SECURITY (0-25 points):
+    - Audited by reputable firm + immutable: 20-25 points
+    - Verified contract + no mint function: 15-20 points
+    - Verified but mutable: 10-15 points
+    - Unverified contract: 5-10 points
+    - Suspected malicious code: 0-5 points
 
-    CREATOR & DISTRIBUTION:
-    - Known/verified creator: +15 points
-    - Fair launch: +10 points
-    - Top 10 holders < 20%: +15 points
-    - Top 10 holders > 60%: -20 points
+    LIQUIDITY & MARKET HEALTH (0-25 points):
+    - Liquidity > $10M + high volume: 20-25 points
+    - Liquidity $1M-$10M + decent volume: 15-20 points
+    - Liquidity $100K-$1M: 10-15 points
+    - Liquidity $10K-$100K: 5-10 points
+    - Liquidity < $10K: 0-5 points
 
-    TOKEN AGE & ACTIVITY:
-    - Age > 1 year: +20 points
-    - Age 6-12 months: +15 points
-    - Age 1-6 months: +5 points
-    - Age < 30 days: -15 points
-    - High trading volume: +10 points
+    CREATOR & DISTRIBUTION (0-20 points):
+    - Known team + fair distribution: 15-20 points
+    - Anonymous but fair launch: 10-15 points
+    - Concentrated holdings (top 10 > 60%): 5-10 points
+    - Suspected rug pull potential: 0-5 points
 
-    SCORING SYSTEM (BASE SCORE: 50):
-    - 90-100: Excellent (Very safe)
-    - 80-89: Good (Low risk)
-    - 70-79: Fair (Moderate risk)  
-    - 60-69: Caution (Elevated risk)
-    - 50-59: High risk
-    - 0-49: Critical risk
+    RISK LEVEL MAPPING (BE STRICT):
+    - 90-100: "excellent" (Only for top-tier established tokens like SOL, USDC)
+    - 80-89: "low" (Well-established with minor concerns)
+    - 70-79: "moderate" (Established but some risks)
+    - 60-69: "caution" (Multiple concerning factors)
+    - 50-59: "high" (Significant red flags)
+    - 0-49: "critical" (Likely scam/avoid)
 
-    RISK LEVEL MAPPING:
-    - 90-100: "excellent"
-    - 80-89: "low" 
-    - 70-79: "moderate"
-    - 60-69: "high"
-    - 0-59: "critical"
+    SCORING GUIDELINES:
+    - USDC/USDT: 95-98 (near perfect)
+    - SOL/established DeFi: 85-92
+    - Popular meme coins (BONK, WIF): 70-80
+    - New legitimate projects: 65-75
+    - Low liquidity tokens: 50-65
+    - Suspected scam tokens: 20-45
+
+    TOKEN-SPECIFIC KNOWLEDGE:
+    - JUP (Jupiter): Established DEX aggregator, good liquidity → 85-88
+    - USDC/USDT: Stablecoins, maximum safety → 95-98
+    - SOL: Native token, maximum security → 92-95
+    - BONK/WIF: Meme coins, volatile → 70-78
+    - New unknown tokens: Assess realistically based on data
 
     Return EXACTLY this JSON format - ALL fields are REQUIRED:
 
@@ -80,32 +90,37 @@ export async function POST(request: Request) {
       },
       "transactions": [],
       "analysis": {
-        "trustScore": 85,
-        "riskLevel": "low",
+        "trustScore": 75, // VARY THIS BASED ON ACTUAL ASSESSMENT
+        "riskLevel": "moderate", // VARY: excellent/low/moderate/caution/high/critical
         "riskFactors": [
           {
-            "factor": "Contract Verification",
-            "severity": "low",
-            "description": "Contract is verified on-chain",
-            "evidence": "Public verification available",
-            "impact": "Positive trust indicator"
+            "factor": "Liquidity Level",
+            "severity": "medium",
+            "description": "Token liquidity affects trading safety",
+            "evidence": "Liquidity: ${tokenData.extractedInfo?.liquidity || 0}",
+            "impact": "Higher slippage risk"
           }
         ],
         "categoryScores": {
-          "contractSecurity": 85,
-          "marketIntegrity": 80,
-          "creatorCredibility": 75,
-          "transactionPatterns": 70,
-          "communityTrust": 65
+          "contractSecurity": 70,  // VARY THESE
+          "marketIntegrity": 65,   // VARY THESE  
+          "creatorCredibility": 60, // VARY THESE
+          "transactionPatterns": 75, // VARY THESE
+          "communityTrust": 70     // VARY THESE
         },
-        "recommendations": ["Monitor liquidity changes regularly"],
-        "alerts": ["Verify token address against official sources"],
-        "summary": "Token shows strong security indicators with established market presence",
-        "confidence": 0.9
+        "recommendations": ["Always verify contract address"],
+        "alerts": ["Do your own research before investing"],
+        "summary": "Provide genuine summary based on actual assessment",
+        "confidence": 0.85
       }
     }
 
-    CRITICAL: If analyzing well-known legitimate tokens (like JUP, SOL, USDC, USDT, etc.), use your knowledge of their established reputation, security audits, and market position to provide accurate scores. Do not rely solely on the provided data if you know the token has strong fundamentals.`;
+    CRITICAL: BE REALISTIC AND VARIED. 
+    - Top tokens (SOL, USDC) should score 90+
+    - Established projects (JUP) should score 80-89  
+    - Medium risk tokens should score 60-79
+    - Risky tokens should score below 60
+    - Adjust scores based on actual token reputation and data quality`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;

@@ -77,7 +77,6 @@ const AnalyticsPage: React.FC = () => {
     );
   }
 
-  // Add safety checks before destructuring
   const { extractedInfo, analysis } = analysisData;
 
   if (!extractedInfo || !analysis) {
@@ -94,7 +93,6 @@ const AnalyticsPage: React.FC = () => {
     );
   }
 
-  // Add fallback values for potentially missing data
   const safeExtractedInfo = {
     tokenName: extractedInfo.tokenName || "Unknown Token",
     symbol: extractedInfo.symbol || "UNKNOWN",
@@ -146,7 +144,7 @@ const AnalyticsPage: React.FC = () => {
                 }}
               >
                 <AlertTriangle className="w-3 h-3 mr-1" />
-                {safeAnalysis.riskLevel.toUpperCase()} Risk
+                {safeAnalysis.riskLevel.toUpperCase()} (Risk)
               </Badge>
             </div>
             <p className="text-sm text-gray-400">
