@@ -1,9 +1,58 @@
+import { AnalyticsData } from "@/type";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+export const getScoreData = (analysis: {
+  trustScore: number;
+  riskLevel: string;
+  riskFactors: {
+    factor: string;
+    severity: string;
+    description: string;
+    evidence?: string | undefined;
+    impact?: string | undefined;
+  }[];
+  categoryScores: {
+    contractSecurity: number;
+    marketIntegrity: number;
+    creatorCredibility: number;
+    transactionPatterns: number;
+    communityTrust: number;
+  };
+  recommendations: string[];
+  alerts: string[];
+  summary: string;
+  confidence: number;
+}) => {
+  return Object.entries(analysis.categoryScores).map(([category, score]) => ({
+    category: category.replace(/([A-Z])/g, " $1").trim(),
+    score,
+    fill: getTrustScoreColor(score),
+  }));
+};
+
+export const getRiskBadgeVariant = (riskLevel: string) => {
+  switch (riskLevel) {
+    case "critical":
+    case "high":
+      return "destructive";
+    case "medium":
+    case "moderate":
+      return "secondary";
+    default:
+      return "default";
+  }
+};
+
+export const getTrustScoreColor = (score: number) => {
+  if (score >= 70) return "#22c55e";
+  if (score >= 40) return "#facc15";
+  return "#f87171";
+};
 
 export function generateAnalysisId(): string {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
@@ -70,17 +119,22 @@ export function formatDaysDifference(days: number): string {
 }
 
 //Helper function from my old codebase
-export async function retryRequest<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> {
-    try {
-        return await fn();
-    } catch (err: unknown) {
-        if (retries > 0){// && err.message.includes('503')) {
-            console.warn(`Retrying after 503 error. Attempts left: ${retries}`);
-            await new Promise(res => setTimeout(res, delay));
-            return retryRequest(fn, retries - 1, delay * 2);
-        }
-        throw err;
+export async function retryRequest<T>(
+  fn: () => Promise<T>,
+  retries = 3,
+  delay = 1000
+): Promise<T> {
+  try {
+    return await fn();
+  } catch (err: unknown) {
+    if (retries > 0) {
+      // && err.message.includes('503')) {
+      console.warn(`Retrying after 503 error. Attempts left: ${retries}`);
+      await new Promise((res) => setTimeout(res, delay));
+      return retryRequest(fn, retries - 1, delay * 2);
     }
+    throw err;
+  }
 }
 
 export function getSessionIdForToken(tokenId: string): string {
@@ -89,7 +143,7 @@ export function getSessionIdForToken(tokenId: string): string {
   let sessionId = sessionStorage.getItem(key);
 
   if (!sessionId) {
-    sessionId = crypto.randomUUID(); 
+    sessionId = crypto.randomUUID();
     // sessionId = Math.random().toString(36).slice(2, 12)
 
     sessionStorage.setItem(key, sessionId);

@@ -10,12 +10,18 @@ import { Separator } from "../ui/separator";
 import { ScrollArea } from "../ui/scroll-area";
 import { useEffect, useState } from "react";
 import { getSessionIdForToken } from "@/lib/utils";
-import { AnalyticsData, mockData } from "@/app/analyze/page";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { PromptBox } from "./CustomInput";
+import { AnalyticsData } from "@/type";
+import { LoadingIndicator } from "../ui/hero-1";
+import TypingDots from "./TypingDots";
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  analysisData?: AnalyticsData | null;
+}
+
+export function AppSidebar({ analysisData }: AppSidebarProps) {
   const [messages, setMessages] = useState([
     {
       role: "model",
@@ -23,15 +29,30 @@ export function AppSidebar() {
     },
   ]);
   const [value, setValue] = useState("");
-  const [analysis_, setAnalysis] = useState<AnalyticsData | null>(null);
+  const [isLoading, setisLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string>("");
 
   useEffect(() => {
-    setSessionId(
-      getSessionIdForToken("JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN")
+    if (analysisData?.basicInfo?.address) {
+      setSessionId(getSessionIdForToken(analysisData.basicInfo.address));
+    }
+  }, [analysisData]);
+
+  const scrollToBottom = () => {
+    const scrollArea = document.querySelector(
+      "[data-radix-scroll-area-viewport]"
     );
-    setAnalysis(mockData);
-  }, []);
+    if (scrollArea) {
+      scrollArea.scrollTo({
+        top: scrollArea.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const sendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -41,17 +62,37 @@ export function AppSidebar() {
     const input = value;
     setValue("");
 
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      body: JSON.stringify({
-        sessionId: sessionId,
-        message: input,
-        analysis: analysis_,
-      }),
-    });
+    setisLoading(true);
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sessionId: sessionId,
+          message: input,
+          analysis: analysisData,
+        }),
+      });
 
-    const { reply } = await res.json();
-    setMessages((prev) => [...prev, { role: "model", text: reply }]);
+      if (!res.ok) {
+        throw new Error("Failed to send message");
+      }
+      setisLoading(false);
+
+      const { reply } = await res.json();
+      setMessages((prev) => [...prev, { role: "model", text: reply }]);
+    } catch (error) {
+      console.error("Failed to send message:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "model",
+          text: "Sorry, I'm having trouble responding right now. Please try again later.",
+        },
+      ]);
+    }
   };
 
   return (
@@ -100,6 +141,7 @@ export function AppSidebar() {
               </div>
             ))}
           </div>
+            {isLoading && <TypingDots />}
         </ScrollArea>
 
         <PromptBox

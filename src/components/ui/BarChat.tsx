@@ -37,12 +37,8 @@ export const description = "A bar chart with a custom label";
 // ];
 
 const chartConfig = {
-  desktop: {
-    label: "Desktop",
-    color: "var(--chart-2)",
-  },
-  mobile: {
-    label: "Mobile",
+  score: {
+    label: "Score",
     color: "var(--chart-2)",
   },
   label: {
@@ -50,7 +46,9 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function SecurityBarChart({
+
+export function SecurityBarChart(
+  {
   chartData,
 }: {
   chartData: {
@@ -58,9 +56,10 @@ export function SecurityBarChart({
     score: number;
     fill: string;
   }[];
-}) {
+  }
+) {
   return (
-    <Card className="bg-black">
+    <Card className="bg-transparent border-white/20">
       <CardHeader>
         <CardTitle>Security Score Breakdown</CardTitle>
         <CardDescription>
@@ -70,50 +69,42 @@ export function SecurityBarChart({
       <CardContent>
         <ChartContainer config={chartConfig}>
           <BarChart
-            accessibilityLayer
             data={chartData}
             layout="vertical"
-            margin={{
-              right: 16,
-            }}
+            margin={{ right: 16 }}
           >
-            <CartesianGrid
-              horizontal={false}
-              className="!bg-green-600"
-            />
+            <CartesianGrid horizontal={false} />
             <YAxis
-              dataKey="month"
               type="category"
               tickLine={false}
               tickMargin={10}
               axisLine={false}
-              tickFormatter={(value) => value.slice(0, 3)}
-              hide
             />
             <XAxis
-              dataKey="desktop"
+              dataKey="score"
               type="number"
-              hide
+              domain={[0, 100]}
             />
+
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent indicator="line" />}
             />
             <Bar
-              dataKey="desktop"
+              dataKey="score"
               layout="vertical"
-              fill="var(--color-desktop)"
+              fill="var(--color-score)"
               radius={4}
             >
               <LabelList
-                dataKey="month"
+                dataKey="category"
                 position="insideLeft"
                 offset={8}
                 className="fill-(--color-label)"
                 fontSize={12}
               />
               <LabelList
-                dataKey="desktop"
+                dataKey="score"
                 position="right"
                 offset={8}
                 className="fill-foreground"

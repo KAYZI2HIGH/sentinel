@@ -19,74 +19,75 @@ const Hero1 = () => {
     maxHeight: 200,
   });
   const router = useRouter();
-const handleSendMessage = async () => {
-  if (value.trim()) {
-    setIsLoading(true);
 
-    try {
-      const tokenRes = await fetch(`/api/token/${value.trim()}`);
-      if (!tokenRes.ok) {
-        let errorMessage = "Failed to fetch token data";
+  const handleSendMessage = async () => {
+    if (value.trim()) {
+      setIsLoading(true);
 
-        try {
-          const errorData = await tokenRes.json();
-          errorMessage = errorData.error || errorData.details || errorMessage;
-        } catch{
-          errorMessage = tokenRes.statusText || errorMessage;
+      try {
+        const tokenRes = await fetch(`/api/token/${value.trim()}`);
+        if (!tokenRes.ok) {
+          let errorMessage = "Failed to fetch token data";
+
+          try {
+            const errorData = await tokenRes.json();
+            errorMessage = errorData.error || errorData.details || errorMessage;
+          } catch {
+            errorMessage = tokenRes.statusText || errorMessage;
+          }
+          throw new Error(errorMessage);
         }
-        throw new Error(errorMessage);
-      }
 
-      const tokenResult = await tokenRes.json();
-      console.log("Complete Token Data:", tokenResult);
+        const tokenResult = await tokenRes.json();
+        console.log("Complete Token Data:", tokenResult);
 
-      if (!tokenResult.success) {
-        throw new Error(
-          tokenResult.error ||
-            tokenResult.details ||
-            "Invalid token data received"
+        if (!tokenResult.success) {
+          throw new Error(
+            tokenResult.error ||
+              tokenResult.details ||
+              "Invalid token data received"
+          );
+        }
+        if (!tokenResult.extractedInfo?.symbol) {
+          throw new Error(
+            "This token doesn't have sufficient data for analysis. It may be invalid or too new."
+          );
+        }
+
+        const analysisRes = await fetch("/api/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tokenData: tokenResult }),
+        });
+
+        if (!analysisRes.ok) {
+          throw new Error("Analysis failed due to server error");
+        }
+
+        const analysis = await analysisRes.json();
+        if (!analysis || !analysis.success || !analysis.analysis) {
+          throw new Error("Invalid analysis data received");
+        }
+
+        console.log("Enhanced Analysis Result:", analysis);
+
+        router.push(
+          `/analyze?data=${encodeURIComponent(JSON.stringify(analysis))}`
         );
+        //eslint-disable-next-line
+      } catch (error: any) {
+        toast.error(`Analysis failed: ${error.message}`, {
+          className:
+            "!bg-gradient-to-r !from-red-500 !to-yellow-500 !text-white",
+          duration: 5000,
+        });
+        console.error("Analysis failed:", error);
+      } finally {
+        setIsLoading(false);
       }
-      if (!tokenResult.extractedInfo?.symbol) {
-        throw new Error(
-          "This token doesn't have sufficient data for analysis. It may be invalid or too new."
-        );
-      }
-
-      const analysisRes = await fetch("/api/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tokenData: tokenResult }),
-      });
-
-      if (!analysisRes.ok) {
-        throw new Error("Analysis failed due to server error");
-      }
-
-      const analysis = await analysisRes.json();
-      if (!analysis || !analysis.metadata || !analysis.metadata.symbol) {
-        throw new Error("Invalid analysis data received");
-      }
-
-      console.log("Enhanced Analysis Result:", analysis);
-      router.push(
-        `/analyze?data=${encodeURIComponent(
-          JSON.stringify(analysis)
-        )}`
-      );
-      //eslint-disable-next-line
-    } catch (error: any) {
-      toast.error(`Analysis failed: ${error.message}`, {
-        className: "!bg-gradient-to-r !from-red-500 !to-yellow-500 !text-white",
-        duration: 5000,
-      });
-      console.error("Analysis failed:", error);
-    } finally {
-      setIsLoading(false);
     }
-  }
-};
-  
+  };
+
   return (
     <main className="bg-[#0c0414] text-white pb-10">
       <div className="min-h-screen flex flex-col relative overflow-x-hidden">
@@ -127,7 +128,7 @@ export const GradientBackgrounds = () => (
   </>
 );
 
-const LoadingIndicator = () => (
+export const LoadingIndicator = () => (
   <motion.div
     className="fixed bottom-8 left-1/2 transform -translate-x-1/2 backdrop-blur-2xl bg-white/[0.02] rounded-full px-4 py-2 shadow-lg border border-white/[0.05]"
     initial={{ opacity: 0, y: 20 }}

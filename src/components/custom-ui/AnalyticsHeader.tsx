@@ -16,7 +16,7 @@ import Link from "next/link";
 const AnalyticsHeader = () => {
   const { state } = useSidebar();
   return (
-    <header className="w-full h-14 py-8 border-b border-white/10 flex items-center justify-between px-4 text-white">
+    <header className="w-full h-14 py-8 flex items-center justify-between px-4 text-white">
       {/* Left section */}
       <div className="flex items-center gap-2">
         {state === "collapsed" && (
