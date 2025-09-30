@@ -56,12 +56,8 @@ export function SecurityBarChart(
     score: number;
     fill: string;
   }[];
-<<<<<<< HEAD
-
-=======
   }
 ) {
->>>>>>> e50d588cb717b5341afbd605b7924ebabce86a40
   return (
     <Card className="bg-transparent border-white/20">
       <CardHeader>
