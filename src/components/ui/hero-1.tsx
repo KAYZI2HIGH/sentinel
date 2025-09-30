@@ -69,9 +69,8 @@ const handleSendMessage = async () => {
       }
 
       console.log("Enhanced Analysis Result:", analysis);
-      const analysisId = generateAnalysisId();
       router.push(
-        `/analyze/${analysisId}?data=${encodeURIComponent(
+        `/analyze?data=${encodeURIComponent(
           JSON.stringify(analysis)
         )}`
       );
