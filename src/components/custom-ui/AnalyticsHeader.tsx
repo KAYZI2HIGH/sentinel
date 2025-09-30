@@ -12,15 +12,23 @@ import {
 import { Input } from "../ui/input";
 import { SidebarTrigger, useSidebar } from "../ui/sidebar";
 import Link from "next/link";
+import Image from "next/image";
 
 const AnalyticsHeader = () => {
   const { state } = useSidebar();
   return (
-    <header className="w-full h-14 py-8 border-b border-white/10 flex items-center justify-between px-4 text-white">
+    <header className="w-full h-14 py-8 flex items-center justify-between px-4 text-white">
       {/* Left section */}
       <div className="flex items-center gap-2">
         {state === "collapsed" && (
           <div className="flex flex-row items-center justify-between gap-4">
+            <div className="relative size-[25px]">
+              <Image
+                src={"/logo.png"}
+                alt="Logo"
+                fill
+              />
+            </div>
             <div>
               <div className="font-semibold text-xl sm:text-lg bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent tracking-tight flex items-center gap-1">
                 Sentinel{" "}

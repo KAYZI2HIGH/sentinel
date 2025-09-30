@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 export const Header = () => {
   return (
@@ -10,7 +11,14 @@ export const Header = () => {
       "
     >
       {/* Logo */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-center gap-2">
+        <div className="relative size-[55px]">
+          <Image
+            src={"/logo.png"}
+            alt="Logo"
+            fill
+          />
+        </div>
         <div
           className="
             font-semibold
