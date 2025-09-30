@@ -59,6 +59,7 @@ export function SecurityBarChart({
     fill: string;
   }[];
 }) {
+	console.log(chartData)
   return (
     <Card className="bg-black">
       <CardHeader>
