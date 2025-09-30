@@ -16,6 +16,7 @@ import { PromptBox } from "./CustomInput";
 import { AnalyticsData } from "@/type";
 import { LoadingIndicator } from "../ui/hero-1";
 import TypingDots from "./TypingDots";
+import Image from "next/image";
 
 interface AppSidebarProps {
   analysisData?: AnalyticsData | null;
@@ -128,8 +129,14 @@ export function AppSidebar({ analysisData }: AppSidebarProps) {
               >
                 <div className="flex items-start gap-3">
                   {msg.role === "model" && (
-                    <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0 mt-1">
-                      <Shield className="w-3 h-3 text-blue-400" />
+                    <div className="w-6 h-6 rounded-full  flex items-center justify-center flex-shrink-0 mt-1">
+                      <div className="relative size-[30px]">
+                        <Image
+                          src={"/logo.png"}
+                          alt="Logo"
+                          fill
+                        />
+                      </div>
                     </div>
                   )}
                   <div className="text-sm leading-relaxed prose prose-invert text-white/90 max-w-none">
@@ -141,7 +148,7 @@ export function AppSidebar({ analysisData }: AppSidebarProps) {
               </div>
             ))}
           </div>
-            {isLoading && <TypingDots />}
+          {isLoading && <TypingDots />}
         </ScrollArea>
 
         <PromptBox

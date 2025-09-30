@@ -1,9 +1,10 @@
 import AnalyticsPage from "@/components/custom-ui/AnalyticsPage";
 import React, { Suspense } from "react";
+import Loading from "../loading";
 
 const page = () => {
   return (
-    <Suspense fallback={<p>Loading...</p>}>
+    <Suspense fallback={<Loading/>}>
       <AnalyticsPage />
     </Suspense>
   );
