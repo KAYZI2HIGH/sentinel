@@ -27,14 +27,14 @@ import {
 
 export const description = "A bar chart with a custom label";
 
-const chartData = [
-  { month: "January", desktop: 186, mobile: 80 },
-  { month: "February", desktop: 305, mobile: 200 },
-  { month: "March", desktop: 237, mobile: 120 },
-  { month: "April", desktop: 73, mobile: 190 },
-  { month: "May", desktop: 209, mobile: 130 },
-  { month: "June", desktop: 214, mobile: 140 },
-];
+// const chartData = [
+//   { month: "January", desktop: 186, mobile: 80 },
+//   { month: "February", desktop: 305, mobile: 200 },
+//   { month: "March", desktop: 237, mobile: 120 },
+//   { month: "April", desktop: 73, mobile: 190 },
+//   { month: "May", desktop: 209, mobile: 130 },
+//   { month: "June", desktop: 214, mobile: 140 },
+// ];
 
 const chartConfig = {
   desktop: {
@@ -50,7 +50,15 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function SecurityBarChart() {
+export function SecurityBarChart({
+  chartData,
+}: {
+  chartData: {
+    category: string;
+    score: number;
+    fill: string;
+  }[];
+}) {
   return (
     <Card className="bg-black">
       <CardHeader>
@@ -69,7 +77,10 @@ export function SecurityBarChart() {
               right: 16,
             }}
           >
-            <CartesianGrid horizontal={false} className="!bg-green-600"/>
+            <CartesianGrid
+              horizontal={false}
+              className="!bg-green-600"
+            />
             <YAxis
               dataKey="month"
               type="category"

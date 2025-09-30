@@ -472,7 +472,7 @@ const AnalyticsPage: React.FC<{ data?: AnalyticsData }> = ({
               </div>
             </CardContent>
           </Card> */}
-          <SecurityBarChart/>
+          <SecurityBarChart chartData={getScoreData()}/>
 
           {/* Token Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
