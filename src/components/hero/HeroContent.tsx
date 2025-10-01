@@ -61,7 +61,7 @@ export const HeroContent: React.FC<HeroContentProps> = ({
         />
 
         {/* Suggestion pills */}
-        <div className="flex flex-wrap max-md:justify-center gap-2 mt-12 max-w-2xl mx-auto">
+        <div className="grid grid-cols-2 md:flex md:flex-wrap md:justify-center gap-2 mt-12 max-w-2xl md:mx-auto">
           {suggestionPills.map((pill, index) => (
             <Button
               key={index}
