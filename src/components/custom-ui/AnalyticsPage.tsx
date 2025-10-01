@@ -131,7 +131,7 @@ const AnalyticsPage: React.FC = () => {
         {/* Header with quick stats */}
         <div className="flex justify-between items-start mb-6">
           <div>
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex max-md:flex-col md:items-center gap-3 mb-2">
               <h2 className="text-2xl font-semibold">
                 {safeExtractedInfo.tokenName} ({safeExtractedInfo.symbol})
               </h2>

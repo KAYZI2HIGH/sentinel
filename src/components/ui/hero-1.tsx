@@ -1,15 +1,14 @@
 "use client";
 
-import * as React from "react";
+import { useAutoResizeTextarea } from "@/hooks/useAutoResizeTextarea";
 import { AnimatePresence, motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import * as React from "react";
+import { toast } from "sonner";
+import TypingDots from "../custom-ui/TypingDots";
+import { AnalyticsSection } from "../hero/AnalyticsSection";
 import { Header } from "../hero/Header";
 import { HeroContent } from "../hero/HeroContent";
-import { AnalyticsSection } from "../hero/AnalyticsSection";
-import TypingDots from "../custom-ui/TypingDots";
-import { useAutoResizeTextarea } from "@/hooks/useAutoResizeTextarea";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { generateAnalysisId } from "@/lib/utils";
 
 const Hero1 = () => {
   const [value, setValue] = React.useState("");
@@ -148,3 +147,4 @@ export const LoadingIndicator = () => (
 );
 
 export { Hero1 };
+

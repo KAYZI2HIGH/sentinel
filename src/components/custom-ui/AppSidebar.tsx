@@ -3,6 +3,7 @@ import { ChevronDown, Shield } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
@@ -150,7 +151,8 @@ export function AppSidebar({ analysisData }: AppSidebarProps) {
           </div>
           {isLoading && <TypingDots />}
         </ScrollArea>
-
+      </SidebarContent>
+      <SidebarFooter>
         <PromptBox
           value={value}
           setValue={setValue}
@@ -158,7 +160,7 @@ export function AppSidebar({ analysisData }: AppSidebarProps) {
           setMessages={setMessages}
           sendMessage={sendMessage}
         />
-      </SidebarContent>
+      </SidebarFooter>
     </Sidebar>
   );
 }

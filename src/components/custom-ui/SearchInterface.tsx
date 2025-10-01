@@ -35,7 +35,7 @@ export const SearchInterface: React.FC<SearchInterfaceProps> = ({
 
   return (
     <div className="relative bg-neutral-900/50 rounded-xl border border-neutral-800 max-w-[700px] mx-auto">
-      <div className="overflow-y-hidden h-10">
+      <div className="overflow-y-hidden h-20">
         <Textarea
           ref={textareaRef}
           value={value}

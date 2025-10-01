@@ -28,7 +28,7 @@ export const HeroContent: React.FC<HeroContentProps> = ({
   ];
 
   return (
-    <section className="flex-1 flex flex-col items-center justify-center px-5 text-center">
+    <section className="flex-1 flex flex-col items-center justify-center px-5 md:text-center">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Headline */}
         <h1 className="text-5xl font-bold leading-tight md:flex items-center gap-3 w-fit mx-auto *:font-[var(--font-geist-mono)] max-md:text-3xl text-balance">

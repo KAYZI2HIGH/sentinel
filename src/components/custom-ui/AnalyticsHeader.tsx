@@ -13,14 +13,16 @@ import { Input } from "../ui/input";
 import { SidebarTrigger, useSidebar } from "../ui/sidebar";
 import Link from "next/link";
 import Image from "next/image";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const AnalyticsHeader = () => {
   const { state } = useSidebar();
+const isMobile = useIsMobile()
   return (
     <header className="w-full h-14 py-8 flex items-center justify-between px-4 text-white">
       {/* Left section */}
       <div className="flex items-center gap-2">
-        {state === "collapsed" && (
+        {state === "collapsed" && !isMobile && (
           <div className="flex flex-row items-center justify-between gap-4">
             <div className="relative size-[25px]">
               <Image
@@ -44,6 +46,7 @@ const AnalyticsHeader = () => {
             <SidebarTrigger />
           </div>
         )}
+        {isMobile && <SidebarTrigger />}
         <Button
           variant="outline"
           size="sm"
