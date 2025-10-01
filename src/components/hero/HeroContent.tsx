@@ -45,7 +45,7 @@ export const HeroContent: React.FC<HeroContentProps> = ({
         </h1>
 
         {/* Subtitle */}
-        <p className=" text-gray-300 text-md max-md:text-sm text-balance">
+        <p className=" text-gray-300 text-md max-md:text-sm w-full">
           Sentinel analyzes tokens, detects scams, and protects your portfolio
           with real-time AI security ratings.
         </p>
@@ -61,7 +61,7 @@ export const HeroContent: React.FC<HeroContentProps> = ({
         />
 
         {/* Suggestion pills */}
-        <div className="flex flex-wrap justify-center gap-2 mt-12 max-w-2xl mx-auto">
+        <div className="flex flex-wrap max-md:justify-center gap-2 mt-12 max-w-2xl mx-auto">
           {suggestionPills.map((pill, index) => (
             <Button
               key={index}
